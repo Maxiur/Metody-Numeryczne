@@ -79,19 +79,10 @@ def main():
         print(f"{i:>3} | {val:>10.10f}")
     print("-" * 18)
 
-    # Macierz wyłącznie do sprawdzenia poprawności rozwiązania
-    A1 = np.array([
-        [3, 1, 0, 0, 0, 0, 0],
-        [1, 4, 1, 0, 0, 0, 0],
-        [0, 1, 4, 1, 0, 0, 0],
-        [0, 0, 1, 4, 1, 0, 0],
-        [0, 0, 0, 1, 4, 1, 0],
-        [0, 0, 0, 0, 1, 4, 1],
-        [0, 0, 0, 0, 0, 1, 3]
-    ], dtype=np.float64)
-
-    A = A1 + np.outer(u, v)
-    check = A @ w
+    A1w = diagonal * w
+    A1w[1:] += subdiagonal[:-1] * w[:-1]
+    A1w[:-1] += subdiagonal[:-1] * w[1:]
+    check = A1w + u * np.dot(v, w)
     ok = np.allclose(check, b)
 
     # === Weryfikacja rownania ===

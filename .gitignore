@@ -1,0 +1,49 @@
+# Środowisko wirtualne Python
+.venv/
+venv/
+env/
+
+# Pliki Pythona
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+
+# Systemowe
+.DS_Store
+Thumbs.db
+
+# Pliki PDF (jeśli nie chcesz commitować)
+# *.pdf
+
+# Logi
+*.log
+
+# Pliki tymczasowe
+*.tmp
+*.temp
