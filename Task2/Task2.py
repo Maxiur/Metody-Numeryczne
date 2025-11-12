@@ -6,51 +6,39 @@ from numpy.typing import NDArray
 vector = NDArray[np.float64]
 
 @njit(fastmath=True)
-def gauss_seidel_step(x: vector, x_old: vector, e: vector, D: vector, L1: vector, L4: vector):
+def gauss_seidel_step(x: vector, x_old: vector, D: vector):
     n = len(x)
 
     # 1) i = 0
     i = 0
-    x[i] = (e[i] - L1[i] * x_old[i+1] - L4[i] * x_old[i + 4]) / D[i]
+    x[i] = (1.0 - x_old[i+1] - x_old[i + 4]) / D[i]
 
     # 2) i = 1, 2, 3
     for i in range(1, 4):
-        x[i] = (e[i]
-                - L1[i-1] * x[i-1]
-                - L1[i] * x_old[i+1]
-                - L4[i] * x_old[i+4]) / D[i]
+        x[i] = (1.0 - x[i-1] - x_old[i+1] - x_old[i+4]) / D[i]
 
     # 3) i = 4 .. n-5  (pełna formuła)
-    for i in range(4, n-4):
-        x[i] = (e[i]
-                - L1[i-1] * x[i-1]       # i-1 (nowe)
-                - L1[i]   * x_old[i+1]   # i+1 (stare)
-                - L4[i-4] * x[i-4]       # i-4 (nowe)
-                - L4[i]   * x_old[i+4]   # i+4 (stare)
-                ) / D[i]
+    for i in range(4, n - 4):
+        x[i] = (1.0 - x[i-1] - x_old[i+1] - x[i-4] - x_old[i+4]) / D[i]
 
     # 4) i = n-4, n-3, n-2
-    for i in range(n-4, n-1):
-        x[i] = (e[i]
-                - L1[i-1] * x[i-1]       # i-1 (nowe)
-                - L4[i-4] * x[i-4]       # i-4 (nowe)
-                - L1[i]   * x_old[i+1]   # i+1 (stare)
-                ) / D[i]
+    for i in range(n - 4, n - 1):
+        x[i] = (1.0 - x[i-1] - x[i-4] - x_old[i+1]) / D[i]
 
     # 5) i = n-1
     i = n - 1
-    x[i] = (e[i] - L1[i-1] * x[i-1] - L4[i-4] * x[i-4]) / D[i]
+    x[i] = (1.0 - x[i-1] - x[i-4]) / D[i]
 
-def conjugate_gradient(e: vector, x0:vector, D: vector, L1: vector, L4: vector, iterations: int, tolerance: np.float64) -> vector:
+def conjugate_gradient(x0:vector, D: vector, iterations: int, tolerance: np.float64) -> vector:
     x = x0.copy()
-    r = e - multiply_A(x, D, L1, L4)
+    r = 1.0 - multiply_A(x, D)
     p = r.copy()
     rTr_old = np.dot(r, r)
 
     history = [] # lista norm
 
     for k in range(iterations):
-        Ap = multiply_A(p, D, L1, L4)
+        Ap = multiply_A(p, D)
         alpha = rTr_old / np.dot(p, Ap)
 
         x_new = x + alpha * p
@@ -70,20 +58,20 @@ def conjugate_gradient(e: vector, x0:vector, D: vector, L1: vector, L4: vector, 
     return x, history
 
 @njit(fastmath=True)
-def multiply_A(x: vector, D: vector, L1: vector, L4: vector) -> vector:
+def multiply_A(x: vector, D: vector) -> vector:
     y = D * x
     n = x.shape[0]
 
     for i in range(n - 4):
-        y[i + 1] += L1[i] * x[i]
-        y[i] += L1[i] * x[i + 1]
+        y[i + 1] += x[i]
+        y[i] += x[i + 1]
 
-        y[i + 4] += L4[i] * x[i]
-        y[i] += L4[i] * x[i + 4]
+        y[i + 4] += x[i]
+        y[i] += x[i + 4]
 
     for i in range(n - 4 , n - 1):
-        y[i + 1] += L1[i] * x[i]
-        y[i] += L1[i] * x[i + 1]
+        y[i + 1] += x[i]
+        y[i] += x[i + 1]
 
     return y
 
@@ -94,9 +82,10 @@ def main() -> None:
     TOLERANCE = 1e-12
 
     D: vector = np.full(n, 4.0)
-    L1: vector = np.ones(n - 1, dtype=np.float64)
-    L4: vector = np.ones(n - 4, dtype=np.float64)
-    e: vector = np.ones(n, dtype=np.float64)
+    # --- Niepotrzebne wektory ----
+    # L1: vector = np.ones(n - 1, dtype=np.float64)
+    # L4: vector = np.ones(n - 4, dtype=np.float64)
+    # e: vector = np.ones(n, dtype=np.float64)
 
     # ---- Gauss-Seidel ----
     x: vector = np.zeros(n, dtype=np.float64)
@@ -105,7 +94,7 @@ def main() -> None:
 
     for iterations in range(1, ITERATION_LIMIT + 1):
         x_old[:] = x
-        gauss_seidel_step(x, x_old, e, D, L1, L4)
+        gauss_seidel_step(x, x_old, D)
         gauss_history.append(np.linalg.norm(x - x_old))
 
         if np.linalg.norm(x - x_old) < TOLERANCE:
@@ -114,7 +103,7 @@ def main() -> None:
 
     # ---- Conjugate Gradient ----
     x0 = np.zeros(n, dtype=np.float64)
-    x, cg_history = conjugate_gradient(e, x0, D, L1, L4, ITERATION_LIMIT, TOLERANCE)
+    x, cg_history = conjugate_gradient(x0, D, ITERATION_LIMIT, TOLERANCE)
     print(f"CG zakończone po {len(cg_history)} iteracjach.")
 
 
