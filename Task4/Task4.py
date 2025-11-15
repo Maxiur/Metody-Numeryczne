@@ -42,46 +42,11 @@ def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
 
     return A
 
-def givens(a, b):
-    if b == 0:
-        return 1.0, 0.0
+def qr_step_tridiagonal(T: matrix) -> matrix:
+    n = T.shape[0]
+    T = T.copy()
 
-    r = np.hypot(a, b)
-    c = a / r
-    s = -b / r
-
-    return c, s
-
-def qr_tridiagonal_givens(T: matrix) -> matrix:
-    R = T.copy()
-    n = R.shape[0]
-
-    for i in range(n - 1):
-        a = R[i, i]
-        b = R[i + 1, i]
-        d = R[i + 1, i + 1]
-        e = R[i + 2, i + 1] if i + 2 < n else 0.0
-
-        # jeżeli już wyzerowany to pomiń
-        if b == 0.0:
-            continue
-
-        r = np.hypot(a, b)
-
-        # aktualizujemy tylko elementy trójdiagonalne
-        R[i, i] = r
-        R[i + 1, i] = 0.0
-
-        R[i, i + 1] = b * (a + d) / r
-        R[i + 1, i + 1] = (a * d - b * b) / r
-
-        # elementy powstające z przesunięcia trójdiagonali
-        if i + 2 < n:
-            R[i, i + 2] = b * e / r
-            R[i + 1, i + 2] = a * e / r
-
-    return R
-
+    return T
 
 def main():
     A: matrix = np.array([[19/12, 13/12, 5/6, 5/6, 13/12, -17/12],
@@ -93,7 +58,8 @@ def main():
 
     T = tridiagonalize(A)
     np.set_printoptions(linewidth=np.inf)
-    T = qr_tridiagonal_givens(T)
+    for _ in range(5000):
+        T = qr_step_tridiagonal(T)
     print(T)
 
 
