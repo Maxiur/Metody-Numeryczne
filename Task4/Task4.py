@@ -5,13 +5,12 @@ vector = NDArray[np.float64]
 matrix = NDArray[np.float64]
 
 def house_holder(x: vector) -> vector:
-    x_norm = np.linalg.norm(x)
-
     # znak x[0]
     sigma = 1.0 if x[0] >= 0 else -1.0
 
     # odbicie wektora
     v = x.copy()
+    x_norm = np.linalg.norm(x)
     v[0] += sigma * x_norm
 
     # normalizacja wektora Householdera u
