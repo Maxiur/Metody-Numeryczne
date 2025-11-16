@@ -92,6 +92,12 @@ def apply_givens_cols(T, i, j, c, s):
         T[row, i] = c * Ti + s * Tj
         T[row, j] = -s * Ti + c * Tj
 
+def is_converged(T, eps=1e-12):
+    n = T.shape[0]
+    for i in range(n - 1):
+        if abs(T[i+1, i]) > eps:
+            return False
+    return True
 
 def main():
     A: matrix = np.array([[19/12, 13/12, 5/6, 5/6, 13/12, -17/12],
@@ -104,12 +110,10 @@ def main():
     T = tridiagonalize(A)
     np.set_printoptions(linewidth=np.inf)
     print(T)
-
     print("\n\nAfter diagonal ------------------------------\n\n")
-    for _ in range(100):
+    for _ in range(70):
         T = qr_step_tridiagonal(T)
     print(T)
-
 
 if __name__ == "__main__":
     main()
