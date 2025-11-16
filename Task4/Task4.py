@@ -39,7 +39,6 @@ def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
         # transformacja podobieństwa
         A = (Q_k.T @ A) @ Q_k
 
-
     return A
 
 def qr_step_tridiagonal(T: matrix) -> matrix:
