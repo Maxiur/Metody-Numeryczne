@@ -40,13 +40,60 @@ def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
         # transformacja podobieństwa
         A = (Q_k.T @ A) @ Q_k
 
+
     return A
 
 def qr_step_tridiagonal(T: matrix) -> matrix:
     n = T.shape[0]
     T = T.copy()
 
+    # QR T = Q R za pomocą rotacji Givensa (zerujemy elementy poddiagonalne)
+    for i in range(n - 1):
+        a = T[i, i]
+        b = T[i + 1, i]
+
+        r = np.hypot(a, b)
+        c = a / r
+        s = b / r
+
+        apply_givens_rows(T, i, i+1, c, s)
+        apply_givens_cols(T, i, i+1, c, s)
+
     return T
+
+def apply_givens_rows(T, i, j, c, s):
+    """
+    Zastosowanie rotacji Givensa G na wierszach i,j: T := G @ T.
+    """
+    n = T.shape[0]
+
+    left = max(0, i - 1)
+    right = min(n - 1, i + 2)
+
+    for col in range(left, right + 1):
+        Ti = T[i, col]
+        Tj = T[j, col]
+
+        T[i, col] = c * Ti + s * Tj
+        T[j, col] = -s * Ti + c * Tj
+
+def apply_givens_cols(T, i, j, c, s):
+
+    """
+    Zastosowanie rotacji Givensa G na kolumnach i,j: T := T @ G^T.
+    """
+    n = T.shape[0]
+
+    top = max(0, i - 1)
+    bottom = min(n - 1, i + 2)
+
+    for row in range(top, bottom + 1):
+        Ti = T[row, i]
+        Tj = T[row, j]
+
+        T[row, i] = c * Ti + s * Tj
+        T[row, j] = -s * Ti + c * Tj
+
 
 def main():
     A: matrix = np.array([[19/12, 13/12, 5/6, 5/6, 13/12, -17/12],
@@ -58,7 +105,10 @@ def main():
 
     T = tridiagonalize(A)
     np.set_printoptions(linewidth=np.inf)
-    for _ in range(5000):
+    print(T)
+
+    print("\n\nAfter diagonal ------------------------------\n\n")
+    for _ in range(100):
         T = qr_step_tridiagonal(T)
     print(T)
 
