@@ -105,8 +105,19 @@ def main():
     np.set_printoptions(linewidth=np.inf)
     print(T)
     print("\n\nAfter diagonal ------------------------------\n\n")
-    for _ in range(70):
+    eps = 1e-12
+    max_iter = 1000
+
+    for it in range(max_iter):
+        diag_old = np.diag(T).copy()
         T = qr_step_tridiagonal(T)
+        diag_new = np.diag(T)
+
+        # sprawdzamy maksymalną zmianę przekątnej
+        diff = np.linalg.norm(diag_new - diag_old)
+        if diff < eps:
+            print(f"Diagonal converged after {it} iterations, diff = {diff:.2e}")
+            break
     print(T)
 
 if __name__ == "__main__":
