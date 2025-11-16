@@ -92,12 +92,6 @@ def apply_givens_cols(T, i, j, c, s):
         T[row, i] = c * Ti + s * Tj
         T[row, j] = -s * Ti + c * Tj
 
-def is_converged(T, eps=1e-12):
-    n = T.shape[0]
-    for i in range(n - 1):
-        if abs(T[i+1, i]) > eps:
-            return False
-    return True
 
 def main():
     A: matrix = np.array([[19/12, 13/12, 5/6, 5/6, 13/12, -17/12],
