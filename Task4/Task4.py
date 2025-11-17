@@ -29,15 +29,25 @@ def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
 
         u = house_holder(x)
 
-        # tworzenie macierzy Householdera
-        H_small = np.eye(n - k - 1) - 2.0 * np.outer(u, u)
-
-        # wstawiamy H_small w odpowiednie miejsce dużej macierzy Q_k
-        Q_k = np.eye(n)
-        Q_k[k + 1:, k + 1:] = H_small
+        # # tworzenie macierzy Householdera
+        # H_small = np.eye(n - k - 1) - 2.0 * np.outer(u, u)
+        #
+        # # wstawiamy H_small w odpowiednie miejsce dużej macierzy Q_k
+        # Q_k = np.eye(n)
+        # Q_k[k + 1:, k + 1:] = H_small
 
         # transformacja podobieństwa
-        A = (Q_k.T @ A) @ Q_k
+        # A = (Q_k.T @ A) @ Q_k
+        # prowadzi do -> O(n^4), robimy zatem inaczej:
+
+        # ----------------------
+
+        # P=I−2uuT
+        # PA=A−2u(uTA)
+        # AP=A−2(Au)uT
+
+        A[k + 1:, k:] -= 2 * np.outer(u, u @ A[k + 1:, k:])
+        A[:, k + 1:] -= 2 * np.outer(A[:, k + 1:] @ u, u)
 
     return A
 
