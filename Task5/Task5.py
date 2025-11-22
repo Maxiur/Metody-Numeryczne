@@ -30,20 +30,100 @@ def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
     for k in range(n - 2):
         x = A[k + 1:, k]
 
-        if np.allclose(x[1:], 0.0):
+        x_norm = np.linalg.norm(x)
+        if x_norm < 1e-14:
             continue
 
         u = house_holder(x)
 
-        A[k + 1:, k:] -= 2.0 * np.outer(u, u @ A[k + 1:, k:])
-        A[:, k + 1:] -= 2.0 * np.outer(A[:, k + 1:] @ u, u)
+        A[k + 1:, k:] -= 2 * np.outer(u, u @ A[k + 1:, k:])
 
-        Q[:, k + 1:] -= 2.0 * np.outer(Q[:, k + 1:] @ u, u)
+        A[:, k + 1:] -= 2 * np.outer(A[:, k + 1:] @ u, u)
+
+        Q[:, k + 1:] -= 2 * np.outer(Q[:, k + 1:] @ u, u)
 
 
     A[np.abs(A) < 1e-14] = 0.0
     Q[np.abs(Q) < 1e-14] = 0.0
     return A, Q
+
+
+def qr_step_tridiagonal(T: matrix, P: matrix) -> matrix:
+    n = T.shape[0]
+    T = T.copy()
+
+    for i in range(n - 1):
+        a = T[i, i]
+        b = T[i + 1, i]
+
+        if abs(b) < 1e-15:
+            continue
+
+        r = np.hypot(a, b)
+        c = a / r
+        s = b / r
+
+        # 1. T = G T
+        apply_givens_rows(T, i, i+1, c, s)
+
+        # 2. T = T G^T
+        apply_givens_cols(T, i, i+1, c, s)
+
+        # 3. P = P G
+        apply_givens_cols(P, i, i+1, c, -s)
+
+    return T, P
+
+
+def apply_givens_rows(T, i, j, c, s):
+    """
+    Zastosowanie rotacji Givensa G na wierszach i,j: T := G @ T.
+    """
+    n = T.shape[0]
+
+    left = max(0, i - 1)
+    right = min(n - 1, i + 2)
+
+    for col in range(left, right + 1):
+        Ti = T[i, col]
+        Tj = T[j, col]
+
+        T[i, col] = c * Ti + s * Tj
+        T[j, col] = -s * Ti + c * Tj
+
+def apply_givens_cols(T, i, j, c, s):
+
+    """
+    Zastosowanie rotacji Givensa G na kolumnach i,j: T := T @ G^T.
+    """
+    n = T.shape[0]
+
+    top = max(0, i - 1)
+    bottom = min(n - 1, i + 2)
+
+    for row in range(top, bottom + 1):
+        Ti = T[row, i]
+        Tj = T[row, j]
+
+        T[row, i] = c * Ti + s * Tj
+        T[row, j] = -s * Ti + c * Tj
+
+
+def qr_algorithm(T: matrix, Q: matrix, max_iter: int = 500, eps: float = 1e-12):
+    P = Q.copy()
+    n = T.shape[0]
+
+    for it in range(1, max_iter + 1):
+        T, P = qr_step_tridiagonal(T, P)
+
+        # norma elementów pod diagonalą
+        off = np.linalg.norm(np.diagonal(T, -1))
+
+        if off < eps:
+            return T, P, it
+
+    # jeśli nie zbiegło — zwracamy info
+    return T, P, max_iter
 
 def main():
     H = np.array([
@@ -63,10 +143,15 @@ def main():
 
     T, Q = tridiagonalize(Hf)
 
-    np.set_printoptions(linewidth=np.inf)
-    print(T)
-    print(Q)
+    Diagonal, P, steps = qr_algorithm(T, Q)
 
+    np.set_printoptions(linewidth=np.inf)
+    print(np.linalg.eigvals(T))
+    print(np.linalg.eigvals(Hf))
+
+    print(Diagonal)
+    print()
+    print(P)
 
 if __name__ == "__main__":
     main()
