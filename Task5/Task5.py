@@ -49,6 +49,7 @@ def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
 def qr_step_tridiagonal(T: matrix, P: matrix) -> matrix:
     n = T.shape[0]
     T = T.copy()
+    P = P.copy()
 
     rotations = []
 
@@ -131,24 +132,31 @@ def qr_algorithm(T: matrix, Q: matrix, max_iter: int = 500, eps: float = 1e-12):
 
 
 def eigenvalues_from_T(T, tol=1e-12):
-    d = np.diag(T)
-    e = np.diag(T, -1)
-
-    n = len(d)
+    n = T.shape[0]
     eigs = []
     i = 0
 
     while i < n:
-        if i < n-1 and abs(e[i]) > tol:
-            # blok 2x2
-            lam1 = d[i] + abs(e[i])
-            lam2 = d[i] - abs(e[i])
-            eigs.extend([lam1, lam2])
+        if i < n-1 and abs(T[i+1, i]) > tol:
+            # Blok 2x2
+            a = T[i, i]
+            b = T[i, i+1]
+            c = T[i+1, i]
+            d = T[i+1, i+1]
+
+            trace = a + d
+            det = a*d - b*c
+
+            # Wartości własne bloku 2x2
+            lambda1 = (trace + np.sqrt(trace**2 - 4*det)) / 2
+            lambda2 = (trace - np.sqrt(trace**2 - 4*det)) / 2
+
+            eigs.extend([lambda1, lambda2])
             i += 2
         else:
-            # pojedyncza wartość własna
-            eigs.append(d[i])
+            eigs.append(T[i, i])
             i += 1
+
     return np.array(eigs)
 
 def real_to_complex(w: vector):
