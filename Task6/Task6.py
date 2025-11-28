@@ -5,7 +5,6 @@ vector = NDArray[np.float64]
 matrix = NDArray[np.float64]
 
 def thomas_factor(subdiagonal: vector, diagonal: vector) -> tuple[vector, vector]:
-
     n = len(diagonal)
     L = np.zeros(n - 1)
 
@@ -15,7 +14,7 @@ def thomas_factor(subdiagonal: vector, diagonal: vector) -> tuple[vector, vector
 
     return L, diagonal
 
-def thomas_solve(L: vector, U: vector, b: vector) -> vector:
+def thomas_solve(L: vector, U: vector, b: vector, superdiagonal: vector) -> vector:
     n = len(U)
 
     # forward
@@ -26,7 +25,7 @@ def thomas_solve(L: vector, U: vector, b: vector) -> vector:
     x = np.zeros(n)
     x[-1] = b[-1] / U[-1]
     for i in range(n - 2, -1, -1):
-        x[i] = (b[i] - L[i] * x[i + 1]) / U[i]
+        x[i] = (b[i] - superdiagonal[i] * x[i + 1]) / U[i]
 
     return x
 
@@ -43,14 +42,17 @@ def sherman_morrison_formula(z: vector, q: vector, v: vector) -> vector:
 
     return z - alpha * q
 
-def inverse_iteration_with_sherman(L: vector, U: vector, u: vector, iterations: int = 1000) -> vector:
-    n = len(U)
+def inverse_iteration_with_sherman(subdiagonal: vector, diagonal: vector, u: vector, iterations: int = 1000) -> vector:
+    n = len(diagonal)
+    L, U = thomas_factor(subdiagonal, diagonal)
+    superdiagonal = subdiagonal
+
     y = np.random.rand(n)
     y /= np.linalg.norm(y)
 
+    T_inverse_u = thomas_solve(L, U, u, superdiagonal)
     for k in range(iterations):
-        T_inverse_y = thomas_solve(L.copy(), U.copy(), y.copy())
-        T_inverse_u = thomas_solve(L.copy(), U.copy(), u.copy())
+        T_inverse_y = thomas_solve(L, U, y, superdiagonal)
 
         z = sherman_morrison_formula(T_inverse_y, T_inverse_u, u)
 
@@ -58,50 +60,9 @@ def inverse_iteration_with_sherman(L: vector, U: vector, u: vector, iterations: 
 
     return y
 
-def brute_force_eigenvector(A: matrix, tau: float) -> tuple[vector, float, int]:
-    """
-    Znajduje wektor własny odpowiadający wartości własnej najbliższej tau
-    poprzez pełne diagonalizację macierzy (brute force).
-
-    Args:
-        A: Macierz symetryczna
-        tau: Przybliżona wartość własna
-
-    Returns:
-        eigenvector: Wektor własny dla najbliższej wartości własnej
-        eigenvalue: Najbliższa wartość własna
-        index: Indeks znalezionej wartości własnej
-    """
-    # Oblicz wszystkie wartości i wektory własne
-    eigenvalues, eigenvectors = np.linalg.eigh(A)
-
-    # Znajdź indeks najbliższej wartości własnej do tau
-    index = np.argmin(np.abs(eigenvalues - tau))
-
-    # Wyodrębnij odpowiadający wektor własny
-    eigenvector = eigenvectors[:, index]
-    eigenvalue = eigenvalues[index]
-
-    # Upewnij się, że pierwszy niezerowy element jest dodatni (dla jednoznaczności znaku)
-    for i in range(len(eigenvector)):
-        if abs(eigenvector[i]) > 1e-10:
-            if eigenvector[i] < 0:
-                eigenvector = -eigenvector
-            break
-
-    return eigenvector, eigenvalue, index
-
 def main():
-    v: vector = np.array([1, 0, 0, 0, 1], dtype=np.float64)
+    # u = v
     u: vector = np.array([1, 0, 0, 0, 1], dtype=np.float64)
-
-    A = np.array([
-        [2, -1, 0, 0, 1],
-        [-1, 2, 1, 0, 0],
-        [0, 1, 1, 1, 0],
-        [0, 0, 1, 2, -1],
-        [1, 0, 0, -1, 2],
-    ], dtype=np.float64)
 
     # M = T + u*vT
     diagonal = np.array([1, 2, 1, 2, 1], dtype=np.float64)
@@ -110,17 +71,10 @@ def main():
     tau = 0.38197
     diagonal_T = diagonal - tau
 
-    L, U = thomas_factor(subdiagonal, diagonal_T)
-
     np.set_printoptions(linewidth=np.inf)
-    eigenvector = inverse_iteration_with_sherman(L, U, u)
+    eigenvector = inverse_iteration_with_sherman(subdiagonal, diagonal_T, u)
     print("Przybliżony wektor własny dla λ ≈ 0.38197:")
     print(eigenvector)
-
-    eigenvector, eigenvalue, index = brute_force_eigenvector(A, tau)
-    print(eigenvalue)
-    print(eigenvector)
-
 
 if __name__ == '__main__':
     main()
