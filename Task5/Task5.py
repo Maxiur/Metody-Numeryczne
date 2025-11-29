@@ -42,7 +42,6 @@ def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
 
         Q[:, k + 1:] -= 2 * np.outer(Q[:, k + 1:] @ u, u)
 
-
     return A, Q
 
 
@@ -75,7 +74,7 @@ def qr_step_tridiagonal(T: matrix, P: matrix) -> matrix:
         apply_givens_cols(T, i, i+1, c, s)
 
         # 3. P = P G
-        apply_givens_cols(P, i, i+1, c, s)
+        apply_givens_cols_P(P, i, i+1, c, s)
 
     return T, P
 
@@ -112,6 +111,22 @@ def apply_givens_cols(T, i, j, c, s):
 
         T[row, i] = c * Ti + s * Tj
         T[row, j] = -s * Ti + c * Tj
+
+
+def apply_givens_cols_P(P, i, j, c, s):
+
+    """
+    Zastosowanie rotacji Givensa G na kolumnach i,j: T := T @ G^T.
+    """
+    n = P.shape[0]
+
+    for row in range(n):
+        Pi = P[row, i]
+        Pj = P[row, j]
+
+        P[row, i] = c * Pi - s * Pj
+        P[row, j] = -s * Pi + c * Pj
+
 
 
 def qr_algorithm(T: matrix, Q: matrix, max_iter: int = 500, eps: float = 1e-12):
@@ -198,6 +213,7 @@ def main():
     print(np.linalg.eigvals(Hf))
     print(np.linalg.eigvals(Diagonal))
     print(eigenvals)
+    print(P)
 
     V_H = np.column_stack([real_to_complex(P[:,k]) for k in range(P.shape[1])])
 
