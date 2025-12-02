@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 from numpy.typing import NDArray
 
 vector = NDArray[np.float64]
@@ -22,10 +23,9 @@ def house_holder(x: vector) -> vector:
 
     return u
 
-def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
+def tridiagonalize(A: matrix) -> matrix:
     A = A.copy().astype(np.float64)
     n = A.shape[0]
-    Q = np.eye(n, dtype=np.float64)
 
     for k in range(n - 2):
         x = A[k + 1:, k]
@@ -37,153 +37,16 @@ def tridiagonalize(A: matrix) -> tuple[matrix, matrix]:
         u = house_holder(x)
 
         A[k + 1:, k:] -= 2 * np.outer(u, u @ A[k + 1:, k:])
-
         A[:, k + 1:] -= 2 * np.outer(A[:, k + 1:] @ u, u)
 
-        Q[:, k + 1:] -= 2 * np.outer(Q[:, k + 1:] @ u, u)
+    return A
 
-    return A, Q
-
-
-def qr_step_tridiagonal(T: matrix, P: matrix) -> matrix:
-    n = T.shape[0]
-    T = T.copy()
-    P = P.copy()
-
-    rotations = []
-
-    for i in range(n - 1):
-        a = T[i, i]
-        b = T[i + 1, i]
-
-        if abs(b) < 1e-15:
-            rotations.append((1.0, 0.0, i))
-            continue
-
-        r = np.hypot(a, b)
-        c = a / r
-        s = b / r
-
-        rotations.append((c, s, i))
-
-        # 1. T = G T
-        apply_givens_rows(T, i, i+1, c, s)
-
-    for c, s, i in rotations:
-        # 2. T = T G^T
-        apply_givens_cols(T, i, i+1, c, s)
-
-        # 3. P = P G
-        apply_givens_cols_P(P, i, i+1, c, s)
-
-    return T, P
-
-
-def apply_givens_rows(T, i, j, c, s):
-    """
-    Zastosowanie rotacji Givensa G na wierszach i,j: T := G @ T.
-    """
-    n = T.shape[0]
-
-    left = max(0, i - 1)
-    right = min(n - 1, i + 2)
-
-    for col in range(left, right + 1):
-        Ti = T[i, col]
-        Tj = T[j, col]
-
-        T[i, col] = c * Ti + s * Tj
-        T[j, col] = -s * Ti + c * Tj
-
-def apply_givens_cols(T, i, j, c, s):
-
-    """
-    Zastosowanie rotacji Givensa G na kolumnach i,j: T := T @ G^T.
-    """
-    n = T.shape[0]
-
-    top = max(0, i - 1)
-    bottom = min(n - 1, i + 2)
-
-    for row in range(top, bottom + 1):
-        Ti = T[row, i]
-        Tj = T[row, j]
-
-        T[row, i] = c * Ti + s * Tj
-        T[row, j] = -s * Ti + c * Tj
-
-
-def apply_givens_cols_P(P, i, j, c, s):
-
-    """
-    Zastosowanie rotacji Givensa G na kolumnach i,j: T := T @ G^T.
-    """
-    n = P.shape[0]
-
-    for row in range(n):
-        Pi = P[row, i]
-        Pj = P[row, j]
-
-        P[row, i] = c * Pi - s * Pj
-        P[row, j] = -s * Pi + c * Pj
-
-
-
-def qr_algorithm(T: matrix, Q: matrix, max_iter: int = 500, eps: float = 1e-12):
-    P = Q.copy()
-    n = T.shape[0]
-
-    for it in range(1, max_iter + 1):
-        T, P = qr_step_tridiagonal(T, P)
-
-        # norma elementów pod diagonalą
-        off = np.linalg.norm(np.diagonal(T, -1))
-
-        if off < eps:
-            return T, P, it
-
-    # jeśli nie zbiegło — zwracamy info
-    return T, P, max_iter
-
-
-def eigenvalues_from_T(T, tol=1e-12):
-    n = T.shape[0]
-    eigs = []
-    i = 0
-
-    while i < n:
-        if i < n-1 and abs(T[i+1, i]) > tol:
-            # Blok 2x2
-            a = T[i, i]
-            b = T[i, i+1]
-            c = T[i+1, i]
-            d = T[i+1, i+1]
-
-            trace = a + d
-            det = a*d - b*c
-
-            # Wartości własne bloku 2x2
-            lambda1 = (trace + np.sqrt(trace**2 - 4*det)) / 2
-            lambda2 = (trace - np.sqrt(trace**2 - 4*det)) / 2
-
-            eigs.extend([lambda1, lambda2])
-            i += 2
-        else:
-            eigs.append(T[i, i])
-            i += 1
-
-    return np.array(eigs)
-
-def real_to_complex(w: vector):
-    n2 = len(w)
+def real_to_complex(v_real):
+    n2 = v_real.shape[0]
     n = n2 // 2
-    x = w[:n]
-    y = w[n:]
-    u = x + 1j * y
-    u /= np.sqrt(np.vdot(u, u))
-    return u
-
-
+    Re = v_real[:n]
+    Im = v_real[n:]
+    return Re + 1j * Im
 
 def main():
     H = np.array([
@@ -201,24 +64,19 @@ def main():
         [B, A]
     ]).astype(np.float64)
 
-    T, Q = tridiagonalize(Hf)
-
-    Diagonal, P, steps = qr_algorithm(T, Q)
-
-    eigenvals = eigenvalues_from_T(Diagonal)
-
     np.set_printoptions(linewidth=np.inf)
     np.set_printoptions(precision=4, suppress=True, linewidth=np.inf)
-    print(np.linalg.eigvals(T))
-    print(np.linalg.eigvals(Hf))
-    print(np.linalg.eigvals(Diagonal))
-    print(eigenvals)
-    print(P)
+    T = tridiagonalize(Hf)
+    diagonal = np.diagonal(T)
+    subdiagonal = np.diagonal(T, offset=1)
 
-    V_H = np.column_stack([real_to_complex(P[:,k]) for k in range(P.shape[1])])
+    print(T)
 
-    print("Wektory własne H (kolumny):")
-    print(V_H)
+    w, v = scipy.linalg.eigh_tridiagonal(diagonal, subdiagonal)
+    print(w)
+    for i in range(0, 8, 2):
+        eigvec = real_to_complex(v[:, i])
+        print("v:", eigvec)
 
 if __name__ == "__main__":
     main()
