@@ -67,15 +67,24 @@ def main():
     for i in range(n):
         f[i] = f_x(x[i])
 
+    x_uniform: vector = np.array([-7/8, -5/8, -3/8, -1/8, 1/8, 3/8, 5/8, 7/8], dtype=num)
+    f_uniform: vector = np.zeros(n, dtype=num)
+
+    for i in range(n):
+        f_uniform[i] = f_x(x_uniform[i])
+
     coeff = coefficients(x, f)
-    print(coeff)
+    coeff_uniform = coefficients(x_uniform, f_uniform)
 
     x_plot = np.linspace(-1.25, 1.25, 1000)
     y_plot = np.array([P(x, coeff) for x in x_plot])
+    y_plot_uniform = np.array([P(x, coeff_uniform) for x in x_plot])
 
-    plt.plot(x_plot, y_plot, label="Wielomian interpolacyjny", color="blue")
+    plt.plot(x_plot, y_plot, label="Czebyszew", color="blue")
+    plt.plot(x_plot, y_plot_uniform, label="Równomierne", color="green")
 
-    plt.scatter(x, f, color="red", label="Punkty interpolacji", zorder=5)
+    plt.scatter(x, f, color="red", label="Punkty interpolacji Czebyszewa", zorder=5)
+    plt.scatter(x_uniform, f_uniform, color="#006400", label="Punkty interpolacji równomiernej", zorder=5)
 
     plt.xlabel("x")
     plt.ylabel("f(x)")
