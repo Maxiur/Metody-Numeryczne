@@ -79,9 +79,9 @@ def plot_results(x: vector, f: vector, ksi: vector, h: num):
         s_spline[k] = spline_function(val, x, f, ksi, h)
 
     plt.figure(figsize=(10, 6))
-    plt.plot(x_range, s_spline, label='Naturalny Splajn Kubiczny $S(x)$', color='blue')
-    plt.plot(x, f, 'o', label='Węzły interpolacji', color='black')
-    plt.title('Naturalny Splajn Kubiczny (Metoda Równooddalonych Węzłów)')
+    plt.plot(x_range, s_spline, label='Naturalny Splajn Kubiczny $P(x)$', color='blue')
+    plt.plot(x, f, 'o', label='Węzły interpolacji', color='red')
+    plt.title('Naturalny Splajn Kubiczny')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.grid(True)
