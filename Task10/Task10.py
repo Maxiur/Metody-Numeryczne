@@ -55,8 +55,38 @@ def get_spline_coefficients(x_val: num, x_j: num, h: num) -> tuple[num, num, num
 
     return A, B, C, D
 
-def spline_function():
-    pass
+def spline_function(x_val: num, x: vector, f: vector, ksi: vector, h: num) -> num:
+    n = len(x)
+    j = np.searchsorted(x, x_val) - 1
+    if j < 0:
+        j = 0
+    if j >= n - 1:
+        j = n - 2
+
+    A, B, C, D = get_spline_coefficients(x_val, x[j], h)
+
+    P_x = A * f[j] + B * f[j + 1] + C * ksi[j] + D * ksi[j + 1]
+    return P_x
+
+
+def plot_results(x: vector, f: vector, ksi: vector, h: num):
+    # Generowanie punktów do rysowania splajnu
+    x_range = np.linspace(x[0], x[-1], 1000)
+
+    # Obliczanie wartości splajnu w punktach x_range
+    s_spline = np.zeros_like(x_range)
+    for k, val in enumerate(x_range):
+        s_spline[k] = spline_function(val, x, f, ksi, h)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(x_range, s_spline, label='Naturalny Splajn Kubiczny $S(x)$', color='blue')
+    plt.plot(x, f, 'o', label='Węzły interpolacji', color='black')
+    plt.title('Naturalny Splajn Kubiczny (Metoda Równooddalonych Węzłów)')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
 def f_x(x: num) -> num:
     return 1.0 / (1 + 5 * x * x)
@@ -85,6 +115,8 @@ def main():
     ksi = np.zeros(n, dtype=num)
     ksi[1:n-1] = ksi_without_zero
 
+
+    plot_results(x, f, ksi, h)
 
 
 if __name__ == "__main__":
