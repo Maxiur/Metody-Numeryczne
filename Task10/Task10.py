@@ -115,9 +115,7 @@ def main():
     ksi = np.zeros(n, dtype=num)
     ksi[1:n-1] = ksi_without_zero
 
-
     plot_results(x, f, ksi, h)
-
 
 if __name__ == "__main__":
     main()
