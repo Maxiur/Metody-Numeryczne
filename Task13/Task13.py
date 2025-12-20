@@ -22,8 +22,7 @@ def romberg(a: num, b: num, tol=1e-7, max_k=25):
         h /= 2
 
         # z punktów {0, 1} zagęszczamy do {0, 0.5, 1} itd...
-        n_new_points = 2**(k - 1)
-        points = a + h * (2*np.arange(1, n_new_points + 1) - 1)
+        points = np.arange(a + h, b, 2*h)
         trapez_sum = R[k - 1][0] / 2 + h * np.sum(f(points))
 
         row = [trapez_sum]
