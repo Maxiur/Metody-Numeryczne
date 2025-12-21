@@ -44,8 +44,34 @@ def laguerre(coeffs: vector, z: num, tolerance=1e-9, iterations=100) -> num:
 
     return z
 
+def forward_substitution(coeffs: vector, z0: num) -> vector:
+    n = len(coeffs) - 1
+    b = np.zeros(n, dtype=num)
+
+    b[0] = coeffs[0]
+    for i in range(1, n):
+        b[i] = coeffs[i] + z0 * b[i-1]
+
+    return b
+
 def main():
-    pass
+    # z^4 + i z^3 - z^2 - i z + 1
+    coeffs = np.array([1, 1j, -1, -1j, 1], dtype=num)
+    roots = []
+
+    while len(coeffs) > 2:
+        z0 = 0 + 0j
+        root = laguerre(coeffs, z0)
+        roots.append(root)
+
+        coeffs = forward_substitution(coeffs, root)
+
+    quad_roots = np.roots(coeffs)
+    roots.extend(quad_roots)
+
+    print("Pierwiastki wielomianu: ")
+    for root in roots:
+        print(root)
 
 if __name__ == "__main__":
     main()
