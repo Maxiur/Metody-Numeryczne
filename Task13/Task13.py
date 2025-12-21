@@ -54,5 +54,8 @@ def main():
 
     print(tabelau[-1][-1])
 
+    for i in range(len(tabelau)):
+        print(f"An,k={i}: {tabelau[i][-1]:.10f}")
+
 if __name__ == "__main__":
     main()
