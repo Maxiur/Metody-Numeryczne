@@ -36,6 +36,7 @@ def floater_hormann_function(x_nodes: vector, f:vector, w: vector, x_eval: vecto
         if np.any(mask):
             r[idx] = f[mask][0]
         else:
+            # w_diff = w / (x - x_k)
             w_diff = w / diff
             numerator = np.sum(w_diff * f)
             denominator = np.sum(w_diff)
