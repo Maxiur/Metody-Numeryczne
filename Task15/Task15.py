@@ -19,10 +19,10 @@ def horner(coeffs: vector, z: num) -> tuple[num, num, num]:
 
     return b, c, 2*d
 
-def laguerre(coeffs: vector, z: num, tolerance=1e-9, iterations=100) -> num:
+def laguerre(coeffs: vector, z: num, tolerance=1e-9, iterations=1000) -> tuple[num, int]:
     n = len(coeffs) - 1
 
-    for _ in range(iterations):
+    for i in range(iterations):
         P, P_prime, P_double_prime = horner(coeffs, z)
 
         # aby nie liczyć dwa razy
@@ -38,11 +38,11 @@ def laguerre(coeffs: vector, z: num, tolerance=1e-9, iterations=100) -> num:
         z_new = z - nP / denominator
 
         if abs(z_new - z) < tolerance:
-            return z_new
+            return z_new, i + 1
 
         z = z_new
 
-    return z
+    return z, iterations
 
 def forward_substitution(coeffs: vector, z0: num) -> vector:
     n = len(coeffs) - 1
@@ -58,20 +58,25 @@ def main():
     # z^4 + i z^3 - z^2 - i z + 1
     coeffs = np.array([1, 1j, -1, -1j, 1], dtype=num)
     roots = []
+    iterations = []
 
     while len(coeffs) > 2:
         z0 = 0 + 0j
-        root = laguerre(coeffs, z0)
+        root, iter = laguerre(coeffs, z0)
         roots.append(root)
+        iterations.append(iter)
 
         coeffs = forward_substitution(coeffs, root)
 
     quad_roots = np.roots(coeffs)
     roots.extend(quad_roots)
 
+
     print("Pierwiastki wielomianu: ")
     for root in roots:
         print(root)
+
+    print(iterations)
 
 if __name__ == "__main__":
     main()
