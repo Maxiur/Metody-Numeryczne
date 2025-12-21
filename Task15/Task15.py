@@ -68,9 +68,9 @@ def main():
 
         coeffs = forward_substitution(coeffs, root)
 
+    # równanie kwadratowe, lecimy deltą!
     quad_roots = np.roots(coeffs)
     roots.extend(quad_roots)
-
 
     print("Pierwiastki wielomianu: ")
     for root in roots:
