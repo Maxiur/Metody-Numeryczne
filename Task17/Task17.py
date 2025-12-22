@@ -94,5 +94,12 @@ def main():
     print(f"Złoty podział: x = {gold_min:.8f}, iteracje = {gold_iterations}")
     print(f"Metoda Brenta: x = {brent_min:.8f}, iteracje = {brent_iterations}")
 
+    a, b, c = -4.0, -1.5, -0.5
+    gold_min, gold_iterations = golden_ratio(a, b, c, tolerance)
+    brent_min, brent_iterations = brent(a, b, c, tolerance)
+
+    print(f"Złoty podział: x = {gold_min:.8f}, iteracje = {gold_iterations}")
+    print(f"Metoda Brenta: x = {brent_min:.8f}, iteracje = {brent_iterations}")
+
 if __name__ == "__main__":
     main()
