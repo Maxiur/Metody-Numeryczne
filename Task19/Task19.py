@@ -67,7 +67,7 @@ def main():
     A = p1 - p0
     B = p0
 
-    # chcemy żeby funckja się zerowała, więc
+    # chcemy żeby funkcja p_alfa, czyli pochodna po Lagrangu się zerowała, więc
     # A * alfa + B = 0
     # alfa = -B / A
 
