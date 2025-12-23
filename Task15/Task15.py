@@ -60,7 +60,7 @@ def main():
     roots = []
     iterations = []
 
-    while len(coeffs) > 2:
+    while len(coeffs) > 3:
         z0 = 0 + 0j
         root, iter = laguerre(coeffs, z0)
         roots.append(root)
