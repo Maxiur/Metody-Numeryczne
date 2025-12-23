@@ -2,8 +2,20 @@ import numpy as np
 
 num = np.float64
 
+def horner(x: num) -> num:
+    coeffs = np.array([0.25, 0.0, -0.5, -1/16, 0.0])
+    p = coeffs[0]
+
+    for i in range(1, len(coeffs)):
+        p = p * x + coeffs[i]
+
+    return p
+
 def f(x: num) -> num:
-    return 0.25 * x**4 - 0.5 * x**2 - (1/16) * x
+    return horner(x)
+
+# def f(x: num) -> num:
+#     return 0.25 * x**4 - 0.5 * x**2 - (1/16) * x
 
 def golden_ratio(a: num, b: num, c: num, tolerance: float = 1e-6) -> tuple[num, int]:
     w = (3 - np.sqrt(5)) / 2
@@ -85,7 +97,7 @@ def brent(a: num, b: num, c: num, tolerance: float = 1e-6) -> tuple[num, int]:
     return b, i
 
 def main():
-    a, b, c = 0.0, 1.0, 3.0
+    a, b, c = 0.0, 1.0, 2.5
     tolerance = 1e-6
 
     gold_min, gold_iterations = golden_ratio(a, b, c, tolerance)
