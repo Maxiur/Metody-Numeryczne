@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.typing import NDArray
 
 num = np.float64
 
@@ -45,11 +44,11 @@ def compute_limit(A: num) -> num:
     R = romberg(-A, A, 1e-8)
     return R[-1][-1]
 
-def F(x: num, A: num) -> num:
+def F(x: num, A: num, limit: num) -> num:
     if x <= -A:
         return 0.0
     if x >= A:
-        return compute_limit(A)
+        return limit
     R = romberg(-A, x, 1e-8)
     return R[-1][-1]
 
@@ -61,7 +60,7 @@ def main():
 
     # wykres
     x_i = np.linspace(-A, A, 1000)
-    Fx = [F(x, A) for x in x_i]
+    Fx = [F(x, A, limit) for x in x_i]
 
     plt.plot(x_i, Fx)
     plt.xlabel("x")
