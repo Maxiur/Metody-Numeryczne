@@ -17,6 +17,34 @@ def f(x: num) -> num:
 # def f(x: num) -> num:
 #     return 0.25 * x**4 - 0.5 * x**2 - (1/16) * x
 
+def bracket_minimum(x0, h=0.1, max_iter=50):
+    a = x0
+    fa = f(a)
+
+    b = a + h
+    fb = f(b)
+
+    # zmiana kierunku, jeśli idziemy pod górę
+    if fb > fa:
+        h = -h
+        b = a + h
+        fb = f(b)
+        if fb > fa:
+            raise RuntimeError("Brak kierunku spadku")
+
+    for _ in range(max_iter):
+        c = b + h
+        fc = f(c)
+
+        if fc > fb:
+            return a, b, c
+
+        a, fa = b, fb
+        b, fb = c, fc
+        h *= 2
+
+    raise RuntimeError("Nie znaleziono przedziału – funkcja monotoniczna")
+
 def golden_ratio(a: num, b: num, c: num, tolerance: float = 1e-6) -> tuple[num, int]:
     w = (3 - np.sqrt(5)) / 2
 
@@ -97,16 +125,16 @@ def brent(a: num, b: num, c: num, tolerance: float = 1e-6) -> tuple[num, int]:
     return b, i
 
 def main():
-    a, b, c = 0.0, 1.0, 2.5
     tolerance = 1e-6
 
+    a, b, c = bracket_minimum(0.0)
     gold_min, gold_iterations = golden_ratio(a, b, c, tolerance)
     brent_min, brent_iterations = brent(a, b, c, tolerance)
 
     print(f"Złoty podział: x = {gold_min:.8f}, iteracje = {gold_iterations}")
     print(f"Metoda Brenta: x = {brent_min:.8f}, iteracje = {brent_iterations}")
 
-    a, b, c = -4.0, -1.5, -0.5
+    a, b, c = bracket_minimum(-2.0)
     gold_min, gold_iterations = golden_ratio(a, b, c, tolerance)
     brent_min, brent_iterations = brent(a, b, c, tolerance)
 

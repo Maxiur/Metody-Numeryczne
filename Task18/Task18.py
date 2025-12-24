@@ -16,6 +16,35 @@ def horner_value(x: num) -> num:
 def f(x: num) -> num:
     return horner_value(x)
 
+
+def bracket_minimum(x0, h=0.1, max_iter=50):
+    a = x0
+    fa = f(a)
+
+    b = a + h
+    fb = f(b)
+
+    # zmiana kierunku, jeśli idziemy pod górę
+    if fb > fa:
+        h = -h
+        b = a + h
+        fb = f(b)
+        if fb > fa:
+            raise RuntimeError("Brak kierunku spadku")
+
+    for _ in range(max_iter):
+        c = b + h
+        fc = f(c)
+
+        if fc > fb:
+            return a, b, c
+
+        a, fa = b, fb
+        b, fb = c, fc
+        h *= 2
+
+    raise RuntimeError("Nie znaleziono przedziału – funkcja monotoniczna")
+
 def brent(a: num, b: num, c: num, tolerance: float = 1e-6) -> tuple[num, int]:
     prev_interval = abs(c - a)
     prev2_interval = prev_interval
@@ -66,8 +95,7 @@ def brent(a: num, b: num, c: num, tolerance: float = 1e-6) -> tuple[num, int]:
     return b, i
 
 def main():
-    a, b, c = -1.0, 0.5, 1.0
-
+    a, b, c = bracket_minimum(0.0)
     x_min, iterations = brent(a, b, c)
     print(f"Minimum znaleziono w punkcie x = {x_min} w {iterations} iteracjach.")
 
