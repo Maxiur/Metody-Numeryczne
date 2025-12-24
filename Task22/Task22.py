@@ -67,8 +67,8 @@ def levenberg_marquardt(x: num, y: num, lam: num, tolerance: float = 1e-10, max_
     return x, y, np.array(path)
 
 def plot_all_paths(all_paths: list[vector]):
-    x = np.linspace(-2, 2, 400)
-    y = np.linspace(-2, 5, 400)
+    x = np.linspace(0, 2, 400)
+    y = np.linspace(-1, 4, 400)
     X, Y = np.meshgrid(x, y)
     Z = rosenbrock(X, Y)
 
@@ -93,8 +93,8 @@ def main():
     np.random.seed(0)
     all_paths = []
 
-    for i in range(5):
-        x, y = np.random.uniform(-2, 2, size=2)
+    for i in range(6):
+        x, y = np.random.uniform(0, 2, size=2)
 
         x_min, y_min, path = levenberg_marquardt(x, y, 1/1024)
         all_paths.append(path)
