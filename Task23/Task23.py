@@ -1,5 +1,4 @@
 import numpy as np
-from macholib.mach_o import dylib
 from numpy.typing import NDArray
 
 num = np.float64
