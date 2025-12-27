@@ -6,7 +6,7 @@ vector = NDArray[np.float64]
 
 def horner_value(x: num) -> num:
     # współczynniki z zadania 7
-    coeffs = np.array([1.0, -1.0, 0.0, 0.0, 3.0, -2.0, 0.0, 1.0], dtype=num)
+    coeffs = np.array([1.0, 0.0, -2.0, 3.0, 0.0, 0.0, -1.0, 1.0], dtype=num)
 
     p = coeffs[0]
     for i in range(1, len(coeffs)):
