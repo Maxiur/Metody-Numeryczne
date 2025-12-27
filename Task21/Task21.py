@@ -20,7 +20,7 @@ def main():
     r_values = [3/4, 7/8, 15/16, 31/32]
 
     for r in r_values:
-        l = Lapunow(0.5, r)
+        l = Lapunow(0.123456789, r)
         print(f"r={r}, lambda ~ {l:.5f}, lambda_analytical = {expected_Lapunow(r):.5f}")
 
 
