@@ -15,18 +15,15 @@ def rosenbrock(x: vector) -> num:
 
 def gradient(x: vector) -> vector:
     n = len(x)
-    grad = np.zeros_like(x, dtype=num)
+    grad = np.zeros(n, dtype=num)
 
-    grad[0] = -2*(1 - x[0]) - 400*(x[1] - x[0]**2) * x[0]
+    grad[0] = -2 * (1 - x[0]) - 400 * x[0] * (x[1] - x[0] ** 2)
 
     for i in range(1, n - 1):
-        grad[i] = (
-            200*(x[i] - x[i - 1]**2)
-            - 400*(x[i + 1] - x[i]**2) * x[i]
-            - 2*(1 - x[i])
-        )
+        grad[i] = 200 * (x[i] - x[i - 1] ** 2) - 400 * x[i] * (x[i + 1] - x[i] ** 2)
 
-    grad[-1] = 200*(x[-1] - x[-2]**2)
+    grad[-1] = 200 * (x[-1] - x[-2] ** 2)
+
     return grad
 
 def hessian(x: vector) -> matrix:
@@ -34,12 +31,12 @@ def hessian(x: vector) -> matrix:
     H = np.zeros((n, n), dtype=num)
 
     for i in range(n - 1):
-        H[i, i] += 2 + 800 * x[i]**2 - 400 * (x[i + 1] - x[i]**2)
+        H[i, i] += 800 * x[i] ** 2 - 400 * (x[i + 1] - x[i] ** 2)
         H[i, i + 1] = -400 * x[i]
-        H[i + 1, i] = H[i, i + 1] # -400 * x[i]
+        H[i + 1, i] = -400 * x[i]
+        H[i + 1, i + 1] += 200
 
-    for i in range(n):
-        H[i, i] += 200
+    H[0, 0] += 2
 
     return H
 
@@ -47,7 +44,7 @@ def levenberg_marquardt_step(x: vector, lam: num, grad: vector, hess: matrix) ->
     hess_local = hess.copy()
 
     for i in range(len(x)):
-        hess_local[i, i] *= (1 + lam)
+        hess_local[i, i] += lam
 
     delta = np.linalg.solve(hess_local, grad)
 
@@ -82,7 +79,7 @@ def levenberg_marquardt(x: vector, lam: num, tolerance: float = 1e-10, max_itera
             if lam > 1e12:
                 break
 
-    return x
+    return x, k + 1
 
 def main():
     np.random.seed(0)
@@ -90,10 +87,11 @@ def main():
     for i in range(6):
         x = np.random.uniform(-2, 2, size=4)
 
-        x_min: vector = levenberg_marquardt(x, 1/1024)
+        x_min, iterations = levenberg_marquardt(x, 1/1024)
 
         print(f"Start {i + 1}: {x}")
         print(f"Koniec: {x_min}")
+        print(f"Iteracje: {iterations}")
         print()
 
 
