@@ -60,21 +60,27 @@ def levenberg_marquardt(x: vector, lam: num, tolerance: float = 1e-10, max_itera
                 break
 
             if lam > 1e12:
-                break
+                raise RuntimeError("Nie znaleziono minimum")
 
-    return x
+    return x, k + 1
 
 def main():
     np.random.seed(0)
     starts = np.random.uniform(-3, 3, size=(128, 2))
 
     for i, x in enumerate(starts):
-        x_min: vector = levenberg_marquardt(x, 1/1024)
+        try:
+            x_min, iterations = levenberg_marquardt(x, 1/1024)
 
-        print(f"Start {i + 1}: {x}")
-        print(f"Koniec: {x_min}")
-        print()
+            print(f"Start {i + 1}: {x}")
+            print(f"Koniec: {x_min}")
+            print(f"Iteracje: {iterations}")
+            print()
 
+        except RuntimeError:
+            print(f"Start {i + 1}: {x}")
+            print(f"Nie znaleziono minimum")
+            print()
 
 if __name__ == "__main__":
     main()
