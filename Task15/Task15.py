@@ -29,7 +29,7 @@ def laguerre(coeffs: vector, z: num, tolerance=1e-9, iterations=1000) -> tuple[n
         # numerator = n * P
         nP = n * P
 
-        square = (n - 1) * (((n - 1) * P_prime ** 2) - nP * P_double_prime)
+        square = np.sqrt((n - 1) * (((n - 1) * P_prime ** 2) - nP * P_double_prime))
 
         denominator1 = P_prime + square
         denominator2 = P_prime - square
