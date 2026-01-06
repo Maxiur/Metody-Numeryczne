@@ -68,19 +68,49 @@ def main():
     np.random.seed(0)
     starts = np.random.uniform(-3, 3, size=(128, 2))
 
-    for i, x in enumerate(starts):
+    results = []
+
+    for x_start in starts:
         try:
-            x_min, iterations = levenberg_marquardt(x, 1/1024)
-
-            print(f"Start {i + 1}: {x}")
-            print(f"Koniec: {x_min}")
-            print(f"Iteracje: {iterations}")
-            print()
-
+            x_min, iterations = levenberg_marquardt(x_start, 1/1024)
+            f_val = f(x_min)
+            results.append({
+                "start": x_start,
+                "x_min": x_min,
+                "f_val": f_val,
+                "iterations": iterations,
+                "success": True
+            })
         except RuntimeError:
-            print(f"Start {i + 1}: {x}")
-            print(f"Nie znaleziono minimum")
-            print()
+            continue
+
+    results.sort(key=lambda r: r["f_val"])
+
+    unique_solutions = []
+    if results:
+        unique_solutions.append(results[0])
+
+        for r in results[1:]:
+            is_new = True
+            for u in unique_solutions:
+                if np.allclose(r["x_min"], u["x_min"], atol=1e-5):
+                    is_new = False
+                    break
+            if is_new:
+                unique_solutions.append(r)
+
+    # 3. Print Summary
+    print(f"{'Rank':<5} | {'x_min':<30} | {'f(x)':<12} | {'Count'}")
+    print("-" * 65)
+
+    for i, sol in enumerate(unique_solutions):
+        # Count how many starting points led to this specific minimum
+        count = sum(1 for r in results if np.allclose(r["x_min"], sol["x_min"], atol=1e-5))
+
+        x_str = f"[{sol['x_min'][0]:.4f}, {sol['x_min'][1]:.4f}]"
+        print(f"{i+1:<5} | {x_str:<30} | {sol['f_val']:<12.6f} | {count}")
+
+    print(f"\nUdanych poszukiwań: {len(results)} / {len(starts)}")
 
 if __name__ == "__main__":
     main()
